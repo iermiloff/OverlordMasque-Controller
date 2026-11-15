@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OverlordMasque Controller — Admin</title>
+<style>
+:root {
+  --bg: #121212;
+  --card: #1e1e1e;
+  --card-2: #2a2a2a;
+  --border: #333;
+  --accent: #990000;
+  --accent-hover: #cc0000;
+  --text: #e0e0e0;
+  --text-muted: #999;
+  --success: #00aa44;
+  --error: #ff4444;
+  --warn: #ffaa00;
+  --input-bg: #0d0d0d;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- Шапка ---------- */
+.header {
+  background: var(--card);
+  border-bottom: 2px solid var(--accent);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header h1 {
+  color: var(--accent);
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.header-user {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ---------- Кнопки ---------- */
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  color: var(--text);
+  background: var(--card-2);
+}
+
+.btn:hover { background: #3a3a3a; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-danger { background: #5a0000; }
+.btn-danger:hover { background: #800000; }
+
+.btn-small {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--card-2); }
+
+/* ---------- Контейнеры ---------- */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.view { display: none; }
+.view.active { display: block; }
+
+/* ---------- Экран логина ---------- */
+.login-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.login-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-card h2 {
+  color: var(--accent);
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: 24px;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.login-card .subtitle {
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  font-size: 13px;
+}
+
+/* ---------- Формы ---------- */
+.field {
+  margin-bottom: 14px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  outline: none;
+  transition: border 0.15s;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: var(--accent);
+}
+
+.field .hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ---------- Вкладки ---------- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  margin-bottom: -1px;
+}
+
+.tab:hover { color: var(--text); }
+
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ---------- Таблицы ---------- */
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.toolbar h3 {
+  font-size: 16px;
+  color: var(--text);
+}
+
+.table-wrap {
+  background: var(--card);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: var(--card-2);
+}
+
+th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+td {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+td.mono {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+}
+
+tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* ---------- Статусы ---------- */
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge-success { background: rgba(0,170,68,0.15); color: var(--success); }
+.badge-error { background: rgba(255,68,68,0.15); color: var(--error); }
+.badge-warn { background: rgba(255,170,0,0.15); color: var(--warn); }
+.badge-muted { background: rgba(153,153,153,0.15); color: var(--text-muted); }
+
+/* ---------- Модалки ---------- */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-backdrop.active {
+  display: flex;
+}
+
+.modal {
+  background: var(--card);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.modal.modal-wide {
+  max-width: 800px;
+}
+
+.modal h3 {
+  color: var(--accent);
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: 20px;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+/* ---------- Уведомления ---------- */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  min-width: 260px;
+  animation: slideIn 0.2s ease-out;
+  border-left: 3px solid var(--accent);
+  background: var(--card);
+}
+
+.toast.success { border-left-color: var(--success); }
+.toast.error { border-left-color: var(--error); }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ---------- JSON-вывод ---------- */
+pre.json {
+  background: var(--input-bg);
+  padding: 14px;
+  border-radius: 6px;
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  color: #b0b0b0;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+/* ---------- Спиннер ---------- */
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ ЛОГИН ============ -->
+<div id="view-login" class="view active">
+  <div class="login-wrap">
+    <div class="login-card">
+      <h2>OVERLORD MASQUE</h2>
+      <div class="subtitle">Controller Admin Panel</div>
+      <form id="login-form">
+        <div class="field">
+          <label>Логин</label>
+          <input type="text" id="login-user" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label>Пароль</label>
+          <input type="password" id="login-pass" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">
+          Войти
+        </button>
+        <div id="login-error" style="color:var(--error); font-size:12px; margin-top:10px; min-height:16px;"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ПАНЕЛЬ ============ -->
+<div id="view-main" class="view">
+  <div class="header">
+    <h1>OVERLORD MASQUE · CONTROLLER</h1>
+    <div class="header-actions">
+      <span id="header-user" class="header-user"></span>
+      <button class="btn btn-ghost btn-small" onclick="logout()">Выйти</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" data-tab="panels" onclick="switchTab('panels')">Панели</button>
+      <button class="tab" data-tab="users" onclick="switchTab('users')">Пользователи</button>
+    </div>
+
+    <!-- ===== ВКЛАДКА: ПАНЕЛИ ===== -->
+    <div id="tab-panels" class="tab-content active">
+      <div class="toolbar">
+        <h3>3x-ui панели</h3>
+        <button class="btn btn-primary" onclick="openPanelModal()">+ Добавить панель</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Имя</th>
+              <th>URL</th>
+              <th>Inbound</th>
+              <th>Домен</th>
+              <th>Порт</th>
+              <th>Статус</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="panels-tbody">
+            <tr><td colspan="7" class="empty"><span class="spinner"></span>Загрузка...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== ВКЛАДКА: ПОЛЬЗОВАТЕЛИ ===== -->
+    <div id="tab-users" class="tab-content">
+      <div class="toolbar">
+        <h3>Пользователи Online</h3>
+        <button class="btn btn-primary" onclick="openUserModal()">+ Создать пользователя</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Логин</th>
+              <th>Panel User</th>
+              <th>Подписка</th>
+              <th>Истекает</th>
+              <th>Трафик</th>
+              <th>Маршрутов</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="7" class="empty"><span class="spinner"></span>Загрузка...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ МОДАЛКА: ДОБАВИТЬ ПАНЕЛЬ ============ -->
+<div id="modal-panel" class="modal-backdrop">
+  <div class="modal">
+    <h3>ДОБАВИТЬ ПАНЕЛЬ</h3>
+    <form id="panel-form">
+      <div class="field">
+        <label>Имя (уникальное)</label>
+        <input type="text" id="panel-name" placeholder="eu1" required>
+        <div class="hint">Используется в имени маршрута в приложении</div>
+      </div>
+      <div class="field">
+        <label>URL панели</label>
+        <input type="url" id="panel-url" placeholder="https://panel-eu1.example.com:2053" required>
+      </div>
+      <div class="field">
+        <label>API Token</label>
+        <input type="password" id="panel-token" placeholder="Токен из Settings → Security → API Token" required>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Inbound ID</label>
+          <input type="number" id="panel-inbound" placeholder="3" required>
+        </div>
+        <div class="field">
+          <label>Порт MASQUE</label>
+          <input type="number" id="panel-port" value="443" required>
+        </div>
+      </div>
+      <div class="field">
+        <label>Домен (для клиента)</label>
+        <input type="text" id="panel-domain" placeholder="eu1.example.com" required>
+        <div class="hint">Домен, который увидит приложение в маршруте</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-panel')">Отмена</button>
+        <button type="submit" class="btn btn-primary">Добавить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ МОДАЛКА: СОЗДАТЬ ПОЛЬЗОВАТЕЛЯ ============ -->
+<div id="modal-user" class="modal-backdrop">
+  <div class="modal">
+    <h3>СОЗДАТЬ ПОЛЬЗОВАТЕЛЯ</h3>
+    <form id="user-form">
+      <div class="field">
+        <label>Логин</label>
+        <input type="text" id="user-username" placeholder="alice" required
+               pattern="[a-zA-Z0-9_\-]{3,64}">
+        <div class="hint">3–64 символа: буквы, цифры, _ и -</div>
+      </div>
+      <div class="field">
+        <label>Пароль</label>
+        <input type="text" id="user-password" placeholder="минимум 8 символов" required minlength="8">
+        <div class="hint">Этот же пароль будет использоваться для клиента в 3x-ui</div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Подписка (дней)</label>
+          <input type="number" id="user-days" value="30" min="1" required>
+        </div>
+        <div class="field">
+          <label>Лимит трафика (ГБ)</label>
+          <input type="number" id="user-traffic" value="0" min="0" required>
+          <div class="hint">0 = без лимита</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-user')">Отмена</button>
+        <button type="submit" class="btn btn-primary">Создать</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ МОДАЛКА: КОНФИГ ПОЛЬЗОВАТЕЛЯ ============ -->
+<div id="modal-config" class="modal-backdrop">
+  <div class="modal modal-wide">
+    <h3>КОНФИГ ПОЛЬЗОВАТЕЛЯ</h3>
+    <div id="config-body"></div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modal-config')">Закрыть</button>
+      <button type="button" class="btn btn-primary" onclick="copyConfig()">Копировать JSON</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ============================================================
+// Глобальное состояние
+// ============================================================
+const state = {
+  token: localStorage.getItem('om_admin_token') || null,
+  username: localStorage.getItem('om_admin_user') || null,
+  panels: [],
+  users: [],
+  currentConfig: null,
+};
+
+// ============================================================
+// API helper
+// ============================================================
+async function api(path, options = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+  };
+  if (state.token) {
+    headers['Authorization'] = `Bearer ${state.token}`;
+  }
+
+  const resp = await fetch(path, { ...options, headers });
+
+  if (resp.status === 401) {
+    logout();
+    throw new Error('Сессия истекла. Войдите снова.');
+  }
+
+  let data;
+  const text = await resp.text();
+  try { data = text ? JSON.parse(text) : null; }
+  catch { data = text; }
+
+  if (!resp.ok) {
+    const msg = (data && (data.detail || data.message)) || `HTTP ${resp.status}`;
+    throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+  }
+  return data;
+}
+
+// ============================================================
+// Утилиты
+// ============================================================
+function toast(message, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = message;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString('ru-RU', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit',
+    });
+  } catch { return iso; }
+}
+
+function fmtBytes(n) {
+  if (!n) return '0';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let i = 0;
+  while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+  return `${n.toFixed(1)} ${units[i]}`;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+// ============================================================
+// Авторизация
+// ============================================================
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+
+  const username = document.getElementById('login-user').value.trim();
+  const password = document.getElementById('login-pass').value;
+
+  try {
+    const data = await api('/api/v1/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+
+    // Проверяем, что это админ
+    const payload = JSON.parse(atob(data.token.split('.')[1]));
+    if (!payload.is_admin) {
+      throw new Error('Этот аккаунт не является администратором');
+    }
+
+    state.token = data.token;
+    state.username = data.account.username;
+    localStorage.setItem('om_admin_token', data.token);
+    localStorage.setItem('om_admin_user', data.account.username);
+
+    showMain();
+  } catch (err) {
+    errEl.textContent = err.message;
+  }
+});
+
+function logout() {
+  state.token = null;
+  state.username = null;
+  localStorage.removeItem('om_admin_token');
+  localStorage.removeItem('om_admin_user');
+  document.getElementById('view-main').classList.remove('active');
+  document.getElementById('view-login').classList.add('active');
+  document.getElementById('login-pass').value = '';
+}
+
+function showMain() {
+  document.getElementById('view-login').classList.remove('active');
+  document.getElementById('view-main').classList.add('active');
+  document.getElementById('header-user').textContent = state.username || '';
+  loadPanels();
+  loadUsers();
+}
+
+// ============================================================
+// Вкладки
+// ============================================================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle(
+    'active', t.dataset.tab === name));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+
+  if (name === 'panels') loadPanels();
+  if (name === 'users') loadUsers();
+}
+
+// ============================================================
+// Панели
+// ============================================================
+async function loadPanels() {
+  const tbody = document.getElementById('panels-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" class="empty"><span class="spinner"></span>Загрузка...</td></tr>';
+
+  try {
+    state.panels = await api('/api/v1/admin/panels');
+    if (!state.panels.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">Нет добавленных панелей</td></tr>';
+      return;
+    }
+    tbody.innerHTML = state.panels.map(p => `
+      <tr>
+        <td><strong>${escapeHtml(p.name)}</strong></td>
+        <td class="mono">${escapeHtml(p.url)}</td>
+        <td class="mono">${p.inbound_id}</td>
+        <td class="mono">${escapeHtml(p.domain)}</td>
+        <td class="mono">${p.port}</td>
+        <td>${p.enabled
+          ? '<span class="badge badge-success">active</span>'
+          : '<span class="badge badge-muted">disabled</span>'}</td>
+        <td style="text-align:right;">
+          <button class="btn btn-danger btn-small" onclick="deletePanel(${p.id}, '${escapeHtml(p.name)}')">Удалить</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty" style="color:var(--error);">${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function openPanelModal() {
+  document.getElementById('panel-form').reset();
+  document.getElementById('panel-port').value = 443;
+  openModal('modal-panel');
+}
+
+document.getElementById('panel-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = {
+    name: document.getElementById('panel-name').value.trim(),
+    url: document.getElementById('panel-url').value.trim(),
+    api_token: document.getElementById('panel-token').value.trim(),
+    inbound_id: parseInt(document.getElementById('panel-inbound').value, 10),
+    domain: document.getElementById('panel-domain').value.trim(),
+    port: parseInt(document.getElementById('panel-port').value, 10),
+  };
+  try {
+    await api('/api/v1/admin/panels', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    closeModal('modal-panel');
+    toast('Панель добавлена', 'success');
+    loadPanels();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+});
+
+async function deletePanel(id, name) {
+  if (!confirm(`Удалить панель "${name}"?\n\nКлиенты в 3x-ui останутся — их нужно будет почистить вручную, если это необходимо.`)) {
+    return;
+  }
+  try {
+    await api(`/api/v1/admin/panels/${id}`, { method: 'DELETE' });
+    toast(`Панель "${name}" удалена`, 'success');
+    loadPanels();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+// ============================================================
+// Пользователи
+// ============================================================
+async function loadUsers() {
+  const tbody = document.getElementById('users-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" class="empty"><span class="spinner"></span>Загрузка...</td></tr>';
+
+  try {
+    state.users = await api('/api/v1/admin/users');
+    if (!state.users.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">Нет пользователей</td></tr>';
+      return;
+    }
+    tbody.innerHTML = state.users.map(u => {
+      const statusBadge = u.subscription_status === 'active'
+        ? '<span class="badge badge-success">active</span>'
+        : `<span class="badge badge-error">${escapeHtml(u.subscription_status)}</span>`;
+
+      const traffic = u.traffic_limit_bytes > 0
+        ? `${fmtBytes(u.traffic_used_bytes)} / ${fmtBytes(u.traffic_limit_bytes)}`
+        : `${fmtBytes(u.traffic_used_bytes)} / ∞`;
+
+      return `
+        <tr>
+          <td><strong>${escapeHtml(u.username)}</strong></td>
+          <td class="mono">${escapeHtml(u.panel_user)}</td>
+          <td>${statusBadge}</td>
+          <td>${fmtDate(u.subscription_expires_at)}</td>
+          <td class="mono">${traffic}</td>
+          <td class="mono">${u.routes_count}</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <button class="btn btn-ghost btn-small" onclick="showUserConfig('${escapeHtml(u.username)}')">Конфиг</button>
+            <button class="btn btn-danger btn-small" onclick="deleteUser('${escapeHtml(u.username)}')">Удалить</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty" style="color:var(--error);">${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function openUserModal() {
+  document.getElementById('user-form').reset();
+  document.getElementById('user-days').value = 30;
+  document.getElementById('user-traffic').value = 0;
+  openModal('modal-user');
+}
+
+document.getElementById('user-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = {
+    username: document.getElementById('user-username').value.trim(),
+    password: document.getElementById('user-password').value,
+    subscription_days: parseInt(document.getElementById('user-days').value, 10),
+    traffic_limit_gb: parseInt(document.getElementById('user-traffic').value, 10),
+  };
+  try {
+    const result = await api('/api/v1/admin/users', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    closeModal('modal-user');
+
+    const failed = result.sync.filter(s => s.status === 'failed');
+    if (failed.length) {
+      toast(`Пользователь создан, но ${failed.length} панелей недоступно. Проверьте конфиг.`, 'error');
+    } else {
+      toast(`Пользователь "${payload.username}" создан`, 'success');
+    }
+    loadUsers();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+});
+
+async function deleteUser(username) {
+  if (!confirm(`Удалить пользователя "${username}"?\n\nКлиенты будут удалены со всех панелей 3x-ui.`)) {
+    return;
+  }
+  try {
+    const result = await api(`/api/v1/admin/users/${encodeURIComponent(username)}`, {
+      method: 'DELETE',
+    });
+    const failed = (result.cleanup || []).filter(c => c.status === 'failed');
+    if (failed.length) {
+      toast(`Пользователь удалён. На ${failed.length} панелях клиент не удалён — почистите вручную.`, 'error');
+    } else {
+      toast(`Пользователь "${username}" удалён`, 'success');
+    }
+    loadUsers();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+// ============================================================
+// Конфиг
+// ============================================================
+async function showUserConfig(username) {
+  try {
+    const cfg = await api(`/api/v1/admin/users/${encodeURIComponent(username)}/config`);
+    state.currentConfig = cfg;
+
+    const syncBadges = (cfg.panel_sync || []).map(s => {
+      const cls = s.status === 'ok' ? 'badge-success'
+        : s.status === 'failed' || s.status === 'unreachable' ? 'badge-error'
+        : 'badge-warn';
+      const err = s.error ? ` · ${escapeHtml(s.error)}` : '';
+      return `<span class="badge ${cls}" style="margin-right:4px;">${escapeHtml(s.panel)}: ${escapeHtml(s.status)}${err}</span>`;
+    }).join('');
+
+    const routesHtml = (cfg.routes || []).length
+      ? cfg.routes.map(r => `
+        <div style="background:var(--card-2); padding:10px 12px; border-radius:6px; margin-bottom:6px;">
+          <div><strong>${escapeHtml(r.name)}</strong></div>
+          <div class="mono" style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+            ${escapeHtml(r.domain)}:${r.port} · ALPN ${(r.alpn || []).join(',')}${r.utls ? ' · uTLS ' + r.utls : ''}
+          </div>
+        </div>
+      `).join('')
+      : '<div style="color:var(--text-muted);">Маршрутов нет. Проверьте синк на панелях.</div>';
+
+    const html = `
+      <div class="field">
+        <label>Учётные данные</label>
+        <div style="background:var(--input-bg); padding:10px 12px; border-radius:6px; font-family:Consolas, monospace; font-size:12px;">
+          <div>Логин: <strong>${escapeHtml(cfg.username)}</strong></div>
+          <div>Panel user: <strong>${escapeHtml(cfg.panel_user)}</strong></div>
+          <div>Panel pass: <strong>${escapeHtml(cfg.panel_pass)}</strong></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Подписка</label>
+        <div style="background:var(--input-bg); padding:10px 12px; border-radius:6px; font-size:12px;">
+          Статус: <strong>${escapeHtml(cfg.subscription.status)}</strong> ·
+          Истекает: <strong>${fmtDate(cfg.subscription.expires_at)}</strong> ·
+          Трафик: <strong>${fmtBytes(cfg.subscription.traffic_used_bytes)}</strong>
+          ${cfg.subscription.traffic_limit_bytes > 0
+            ? `/ ${fmtBytes(cfg.subscription.traffic_limit_bytes)}`
+            : '/ ∞'}
+        </div>
+      </div>
+      <div class="field">
+        <label>Синк на панелях</label>
+        <div>${syncBadges || '<span style="color:var(--text-muted);">Нет данных</span>'}</div>
+      </div>
+      <div class="field">
+        <label>Маршруты (${(cfg.routes || []).length})</label>
+        ${routesHtml}
+      </div>
+      <div class="field">
+        <label>Полный JSON (как отдаёт /api/v1/routes)</label>
+        <pre class="json">${escapeHtml(JSON.stringify(cfg, null, 2))}</pre>
+      </div>
+    `;
+
+    document.getElementById('config-body').innerHTML = html;
+    openModal('modal-config');
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function copyConfig() {
+  if (!state.currentConfig) return;
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(state.currentConfig, null, 2));
+    toast('JSON скопирован в буфер обмена', 'success');
+  } catch {
+    toast('Не удалось скопировать (нужен HTTPS или localhost)', 'error');
+  }
+}
+
+// ============================================================
+// Инициализация
+// ============================================================
+(function init() {
+  if (state.token) {
+    // Проверяем валидность токена через запрос
+    api('/api/v1/admin/panels')
+      .then(() => showMain())
+      .catch(() => logout());
+  }
+})();
+</script>
+</body>
+</html>
