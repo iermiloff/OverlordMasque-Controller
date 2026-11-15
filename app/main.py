@@ -380,3 +380,106 @@ def user_config(username: str, _: User = Depends(get_admin_user),
 @app.get("/")
 def root():
     return {"app": settings.app_name, "status": "running"}
+
+import os
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# --- CORS (для удобства разработки и открытия /admin) ---
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # в продакшене ограничить
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- Раздача статики и /admin ---
+
+_STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+os.makedirs(_STATIC_DIR, exist_ok=True)
+
+if os.path.isdir(_STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
+
+
+@app.get("/admin", include_in_schema=False)
+def admin_panel():
+    """Отдаёт одностраничную админ-панель."""
+    path = os.path.join(_STATIC_DIR, "admin.html")
+    if not os.path.exists(path):
+        raise HTTPException(500, "admin.html не найден в app/static/")
+    return FileResponse(path, media_type="text/html")
+
+
+# --- Admin: список пользователей ---
+
+@app.get("/api/v1/admin/users")
+def list_users(_: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    users = db.query(User).filter(User.is_admin == False).all()
+    return [
+        {
+            "id": u.id,
+            "username": u.username,
+            "panel_user": u.panel_user,
+            "subscription_status": u.subscription_status,
+            "subscription_expires_at": u.subscription_expires_at,
+            "traffic_used_bytes": u.traffic_used_bytes,
+            "traffic_limit_bytes": u.traffic_limit_bytes,
+            "created_at": u.created_at,
+            "routes_count": len(u.routes),
+        }
+        for u in users
+    ]
+
+
+# --- Admin: удаление пользователя ---
+
+@app.delete("/api/v1/admin/users/{username}")
+def delete_user(username: str, _: User = Depends(get_admin_user),
+                db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(404, f"User '{username}' not found")
+    if user.is_admin:
+        raise HTTPException(400, "Нельзя удалить админа")
+
+    # Удаляем клиентов на всех панелях (не блокируем удаление при ошибке)
+    cleanup_report = []
+    for ur in user.routes:
+        panel = ur.panel
+        if not panel:
+            continue
+        try:
+            token = decrypt(panel.api_token_encrypted)
+            client = XuiClient(panel.url, token)
+            client.delete_client(user.panel_user)
+            cleanup_report.append({"panel": panel.name, "status": "deleted"})
+        except XuiError as e:
+            logger.warning(
+                f"Не удалось удалить клиента {user.panel_user} "
+                f"с панели {panel.name}: {e}")
+            cleanup_report.append(
+                {"panel": panel.name, "status": "failed", "error": str(e)[:300]})
+
+    db.delete(user)
+    db.commit()
+    return {"username": username, "cleanup": cleanup_report}
+
+
+# --- Admin: удаление панели ---
+
+@app.delete("/api/v1/admin/panels/{panel_id}")
+def delete_panel(panel_id: int, _: User = Depends(get_admin_user),
+                 db: Session = Depends(get_db)):
+    panel = db.query(Panel).filter(Panel.id == panel_id).first()
+    if not panel:
+        raise HTTPException(404, f"Panel {panel_id} not found")
+
+    # Клиентов в 3x-ui не трогаем — админ почистит вручную,
+    # если посчитает нужным. UserRoute удалятся каскадом.
+    name = panel.name
+    db.delete(panel)
+    db.commit()
+    return {"id": panel_id, "name": name, "status": "deleted"}
